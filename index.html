@@ -1,54 +1,182 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>我的單機專案追蹤器</title>
+    <title>我的專案時程儀表板</title>
     <meta charset="UTF-8">
+    
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
-        h2 { border-bottom: 2px solid #ccc; padding-bottom: 10px; }
-        input[type="text"], input[type="date"], button { padding: 10px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
-        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-        button:hover { opacity: 0.8; }
-        .project-item { border: 1px solid #eee; margin-bottom: 15px; padding: 15px; border-radius: 5px; position: relative; }
-        .date-label { display: block; font-size: 0.9em; color: #555; margin-top: 5px; }
-        .delete-btn { background-color: #f44336; width: auto; padding: 5px 10px; float: right; }
+        /* 基礎設定 */
+        :root {
+            --primary-color: #795548; /* 深棕色作為主要文字/按鈕色 */
+            --accent-color: #a1887f;  /* 柔和的點綴色 */
+            --bg-color: #f7f3e8;      /* 溫暖米白底色 */
+            --card-bg: #ffffff;       /* 卡片白色背景 */
+            --warning-color: #d32f2f; /* 警示紅色 */
+            --border-radius: 12px;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            padding: 40px 20px; 
+            max-width: 750px; /* 稍微寬一點 */
+            margin: 0 auto; 
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-color); 
+            margin-bottom: 5px;
+            font-weight: 300; /* 極簡專業風格：字體稍微細一點 */
+        }
+        p.subtitle {
+            text-align: center;
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        h2 { 
+            border-bottom: 1px solid #e0e0e0; /* 簡約分隔線 */
+            padding-bottom: 8px; 
+            margin-top: 35px;
+            color: var(--primary-color);
+            font-size: 1.5em;
+            font-weight: 500;
+        }
+
+        /* 表單輸入框樣式 */
+        input[type="text"], input[type="date"] { 
+            padding: 12px; 
+            margin-bottom: 15px; 
+            width: 100%; 
+            box-sizing: border-box; 
+            border: 1px solid #ccc;
+            border-radius: 8px; /* 圓角 */
+            background-color: #fffaf0; /* 淺米色輸入框背景 */
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, input[type="date"]:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(161, 136, 127, 0.2);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        /* 主要按鈕樣式 */
+        button { 
+            padding: 12px; 
+            margin-bottom: 20px; 
+            width: 100%; 
+            box-sizing: border-box; 
+            background-color: var(--primary-color); 
+            color: white; 
+            border: none; 
+            border-radius: var(--border-radius); 
+            cursor: pointer; 
+            font-size: 1.1em;
+            transition: background-color 0.3s;
+            font-weight: 600;
+        }
+        button:hover { 
+            background-color: #5d4037; 
+        }
+
+        /* 專案列表樣式 */
+        .project-item { 
+            background-color: var(--card-bg); 
+            border-radius: var(--border-radius); 
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05); /* 輕微陰影 */
+            margin-bottom: 20px; 
+            padding: 20px; 
+            position: relative; 
+            border-left: 5px solid var(--accent-color); /* 增加一個側邊色條 */
+        }
+
+        /* 日期標籤樣式 */
+        .date-label { 
+            display: block; 
+            font-size: 0.95em; 
+            color: #555; 
+            margin-top: 8px;
+            padding-left: 15px;
+            position: relative;
+        }
+        .date-label::before { /* 增加小點綴 */
+            content: "•";
+            color: var(--accent-color);
+            font-size: 1.2em;
+            line-height: 1;
+            position: absolute;
+            left: 0;
+            top: 5px;
+        }
+
+        .project-item h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        /* 刪除按鈕樣式 */
+        .delete-btn { 
+            background-color: var(--warning-color); 
+            width: auto; 
+            padding: 5px 10px; 
+            float: right; 
+            font-size: 0.85em;
+            border-radius: 6px;
+        }
+        .delete-btn:hover {
+            background-color: #b71c1c;
+        }
+
+        /* 警告日期（原本是程式碼裡設定的 red） */
+        .warning-text {
+            font-weight: bold;
+            color: var(--warning-color) !important; 
+        }
     </style>
 </head>
 <body>
 
-    <h1>📝 接案時程單機追蹤器</h1>
-    <p>所有資料會自動保存在您的瀏覽器中，不需登入帳號。</p>
+    <h1>🎬 專案時程儀表板</h1>
+    <p class="subtitle">追蹤您的腳本、拍攝與上線時間，保持專業與效率！</p>
 
     <h2>新增專案</h2>
-    <input type="text" id="projectName" placeholder="專案名稱 (例如: XX廣告拍攝)" required>
+    <input type="text" id="projectName" placeholder="專案名稱 (例如: XX餐廳拍攝)" required>
     
-    <label for="scriptDate">腳本死線日期:</label>
+    <label for="scriptDate">腳本繳交時間:</label>
     <input type="date" id="scriptDate" required>
     
-    <label for="shootingDate">拍攝日期:</label>
+    <label for="shootingDate">影片繳交時間:</label>
     <input type="date" id="shootingDate" required>
     
-    <label for="submissionDate">交稿死線日期:</label>
+    <label for="submissionDate">影片上線時間:</label>
     <input type="date" id="submissionDate" required>
     
     <button onclick="addProject()">+ 加入專案</button>
 
-    <h2>專案列表</h2>
+    <h2>追蹤列表</h2>
     <div id="projectList">
         </div>
 
     <script>
-        // --- JavaScript 邏輯區塊 ---
         const STORAGE_KEY = 'clientProjects';
 
         function loadProjects() {
-            // 從瀏覽器儲存區讀取資料，如果沒有則返回空陣列
             const json = localStorage.getItem(STORAGE_KEY);
             return json ? JSON.parse(json) : [];
         }
 
         function saveProjects(projects) {
-            // 將專案清單存回瀏覽器
             localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
         }
 
@@ -58,31 +186,44 @@
             listDiv.innerHTML = '';
 
             if (projects.length === 0) {
-                listDiv.innerHTML = '<p style="color:gray;">目前沒有追蹤中的專案。</p>';
+                listDiv.innerHTML = '<p style="color:gray; text-align: center; padding-top: 20px;">目前沒有追蹤中的專案。</p>';
                 return;
             }
 
-            // 依據交稿死線排序 (最近的排在最前面)
+            // 依據影片上線時間排序 (最近的排在最前面)
             projects.sort((a, b) => new Date(a.submissionDate) - new Date(b.submissionDate));
 
             projects.forEach((project, index) => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'project-item';
                 
-                // 檢查交稿日期是否少於 7 天 (簡單的警示色)
+                // 檢查影片上線時間是否少於 7 天 (簡單的警示色)
                 const today = new Date();
                 const deadline = new Date(project.submissionDate);
+                // 將日期設為當天午夜，以確保計算準確
+                today.setHours(0, 0, 0, 0); 
+                deadline.setHours(0, 0, 0, 0); 
+
                 const diffTime = deadline.getTime() - today.getTime();
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                const deadlineColor = diffDays <= 7 ? 'style="color:red; font-weight: bold;"' : '';
+                
+                // 決定警示文字樣式
+                let deadlineClass = '';
+                if (diffDays <= 7 && diffDays >= 0) {
+                    deadlineClass = 'warning-text'; // 7天內警示
+                } else if (diffDays < 0) {
+                    deadlineClass = 'warning-text'; // 已過期
+                }
+
+                const daysRemainingText = diffDays < 0 ? `已過期 ${Math.abs(diffDays)} 天` : `還剩 ${diffDays} 天`;
 
 
                 itemDiv.innerHTML = `
                     <h3>${project.name}</h3>
                     <button class="delete-btn" onclick="deleteProject(${index})">刪除</button>
-                    <span class="date-label">腳本死線：${project.scriptDate}</span>
-                    <span class="date-label">拍攝日期：${project.shootingDate}</span>
-                    <span class="date-label" ${deadlineColor}>交稿死線：${project.submissionDate} (還剩 ${diffDays} 天)</span>
+                    <span class="date-label">腳本繳交時間：${project.scriptDate}</span>
+                    <span class="date-label">影片繳交時間：${project.shootingDate}</span>
+                    <span class="date-label ${deadlineClass}">影片上線時間：${project.submissionDate} (${daysRemainingText})</span>
                 `;
                 listDiv.appendChild(itemDiv);
             });
@@ -124,13 +265,11 @@
                 return;
             }
             const projects = loadProjects();
-            // 從陣列中刪除指定索引的專案
             projects.splice(indexToDelete, 1);
             saveProjects(projects);
             displayProjects();
         }
 
-        // 頁面載入時運行一次，顯示現有的專案
         window.onload = displayProjects;
     </script>
 
