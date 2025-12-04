@@ -28,11 +28,11 @@
             color: var(--primary-color); 
             margin-bottom: 5px;
             font-weight: 300; 
-            font-size: 2em; /* 加大主標題 */
+            font-size: 2em; 
         }
         p.subtitle {
             text-align: center;
-            color: var(--warning-color); /* 讓副標語是醒目的紅字 */
+            color: var(--warning-color); 
             margin-bottom: 30px;
             font-size: 1.1em;
             font-weight: bold;
@@ -89,12 +89,6 @@
             background-color: #5d4037; 
         }
 
-        /* 專案列表容器 */
-        #projectList {
-            list-style: none;
-            padding: 0;
-        }
-
         /* 專案列表項目（卡片）樣式 */
         .project-item { 
             background-color: var(--card-bg); 
@@ -104,34 +98,54 @@
             padding: 20px 20px 20px 50px; /* 左側留出空間給序號 */
             position: relative; 
             border-left: 5px solid var(--accent-color); 
+            transition: opacity 0.3s;
+        }
+        
+        /* 1. 完成狀態樣式 */
+        .project-item.completed {
+            opacity: 0.6; /* 變淡 */
+            background-color: #f0f0f0;
+            border-left-color: #9e9e9e;
+        }
+        .project-item.completed h3 {
+            text-decoration: line-through; /* 標題畫線 */
+            color: #9e9e9e;
+        }
+        .project-item.completed .date-label {
+             color: #9e9e9e;
+        }
+        .project-item.completed .date-label::before {
+             color: #9e9e9e;
         }
 
-        /* 順序編號樣式（菱形） */
+
+        /* 2. 順序編號樣式（菱形） */
         .project-item::before {
-            content: attr(data-index); /* 顯示 JS 傳入的 index */
+            content: ""; /* 不放文字 */
             position: absolute;
-            left: 15px;
-            top: 20px;
-            width: 25px;
-            height: 25px;
-            line-height: 25px;
-            text-align: center;
+            left: 10px;
+            top: 15px;
+            width: 30px;
+            height: 30px;
             background-color: var(--primary-color);
+            border-radius: 5px;
+            transform: rotate(45deg); /* 菱形外框 */
+            z-index: 1; 
+        }
+
+        /* 2. 順序編號數字樣式（保持正向） */
+        .project-index {
+            position: absolute;
+            left: 10px;
+            top: 15px;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
             color: white;
             font-size: 0.9em;
             font-weight: bold;
-            border-radius: 5px;
-            transform: rotate(45deg); /* 旋轉成菱形 */
-        }
-        .project-item span.project-index { /* 讓文字不旋轉回來 */
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            line-height: 25px;
-            text-align: center;
-            transform: rotate(-45deg); 
+            z-index: 2; /* 確保在菱形上方 */
         }
 
         /* 日期標籤樣式 */
@@ -174,7 +188,18 @@
             background-color: #b71c1c;
         }
 
-        /* 警告日期（倒數天數）樣式 */
+        /* 3. 增加 Checkbox 樣式 */
+        .completion-checkbox {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            z-index: 3;
+        }
+
+        /* 2. 警告日期（倒數天數）樣式 - 3天內或過期變紅 */
         .warning-text {
             font-weight: bold;
             color: var(--warning-color) !important; 
@@ -200,7 +225,8 @@
     
     <button onclick="addProject()">+ 加入專案</button>
 
-    <h2>待辦追蹤列表</h2> <div id="projectList">
+    <h2>待辦追蹤列表</h2> 
+    <div id="projectList">
         </div>
 
     <script>
@@ -214,13 +240,21 @@
         function saveProjects(projects) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
         }
+        
+        // 新增：處理打勾狀態的函數
+        function toggleCompletion(index) {
+            const projects = loadProjects();
+            // 更改該項目的 isCompleted 狀態
+            projects[index].isCompleted = !projects[index].isCompleted;
+            saveProjects(projects);
+            displayProjects(); // 重新渲染列表
+        }
 
-        // 計算日期差額的通用函數
+        // 關鍵邏輯：計算日期差額的通用函數（3天閾值）
         function getDaysRemaining(dateString) {
             const today = new Date();
             const targetDate = new Date(dateString);
             
-            // 將日期設為當天午夜，以確保計算準確
             today.setHours(0, 0, 0, 0); 
             targetDate.setHours(0, 0, 0, 0); 
 
@@ -233,8 +267,8 @@
             if (diffDays < 0) {
                 text = `已過期 ${Math.abs(diffDays)} 天`;
                 className = 'warning-text';
-            } else if (diffDays <= 7) {
-                className = 'warning-text'; // 7天內警示
+            } else if (diffDays <= 3) { // 關鍵改動：3天閾值
+                className = 'warning-text'; 
             }
 
             return { text, className };
@@ -254,80 +288,22 @@
             projects.sort((a, b) => new Date(a.submissionDate) - new Date(b.submissionDate));
 
             projects.forEach((project, index) => {
+                
+                // 1. 設置完成狀態的 class
+                const completionClass = project.isCompleted ? 'completed' : '';
+
                 const itemDiv = document.createElement('div');
-                itemDiv.className = 'project-item';
-                // 設置自定義屬性 data-index，供 CSS 菱形序號使用
+                itemDiv.className = `project-item ${completionClass}`;
+                
+                // 2. 菱形編號（數字保持直立）
                 itemDiv.setAttribute('data-index', index + 1);
+                const indexSpan = `<span class="project-index">${index + 1}</span>`;
 
-                // 計算所有日期的倒數計時
-                const scriptDays = getDaysRemaining(project.scriptDate);
-                const shootingDays = getDaysRemaining(project.shootingDate);
-                const submissionDays = getDaysRemaining(project.submissionDate);
+                // 3. Checkbox 狀態
+                const checked = project.isCompleted ? 'checked' : '';
+                const checkboxHtml = `<input type="checkbox" class="completion-checkbox" ${checked} onclick="toggleCompletion(${index})">`;
 
+                
+                let scriptHtml, shootingHtml, submissionHtml;
 
-                itemDiv.innerHTML = `
-                    <h3>${project.name}</h3>
-                    <button class="delete-btn" onclick="deleteProject(${index})">刪除</button>
-
-                    <span class="date-label ${scriptDays.className}">
-                        腳本繳交時間：${project.scriptDate} (${scriptDays.text})
-                    </span>
-
-                    <span class="date-label ${shootingDays.className}">
-                        影片繳交時間：${project.shootingDate} (${shootingDays.text})
-                    </span>
-
-                    <span class="date-label ${submissionDays.className}">
-                        影片上線時間：${project.submissionDate} (${submissionDays.text})
-                    </span>
-                `;
-                listDiv.appendChild(itemDiv);
-            });
-        }
-
-        function addProject() {
-            const name = document.getElementById('projectName').value;
-            const script = document.getElementById('scriptDate').value;
-            const shooting = document.getElementById('shootingDate').value;
-            const submission = document.getElementById('submissionDate').value;
-
-            if (!name || !script || !shooting || !submission) {
-                alert('請填寫所有欄位！');
-                return;
-            }
-
-            const newProject = {
-                name: name,
-                scriptDate: script,
-                shootingDate: shooting,
-                submissionDate: submission
-            };
-
-            const projects = loadProjects();
-            projects.push(newProject);
-            saveProjects(projects);
-
-            // 清空輸入欄位
-            document.getElementById('projectName').value = '';
-            document.getElementById('scriptDate').value = '';
-            document.getElementById('shootingDate').value = '';
-            document.getElementById('submissionDate').value = '';
-
-            displayProjects();
-        }
-
-        function deleteProject(indexToDelete) {
-            if (!confirm("確定要刪除這個專案嗎？")) {
-                return;
-            }
-            const projects = loadProjects();
-            projects.splice(indexToDelete, 1);
-            saveProjects(projects);
-            displayProjects();
-        }
-
-        window.onload = displayProjects;
-    </script>
-
-</body>
-</html>
+                if
