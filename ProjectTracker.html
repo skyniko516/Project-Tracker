@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>我的單機專案追蹤器</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+        h2 { border-bottom: 2px solid #ccc; padding-bottom: 10px; }
+        input[type="text"], input[type="date"], button { padding: 10px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { opacity: 0.8; }
+        .project-item { border: 1px solid #eee; margin-bottom: 15px; padding: 15px; border-radius: 5px; position: relative; }
+        .date-label { display: block; font-size: 0.9em; color: #555; margin-top: 5px; }
+        .delete-btn { background-color: #f44336; width: auto; padding: 5px 10px; float: right; }
+    </style>
+</head>
+<body>
+
+    <h1>📝 接案時程單機追蹤器</h1>
+    <p>所有資料會自動保存在您的瀏覽器中，不需登入帳號。</p>
+
+    <h2>新增專案</h2>
+    <input type="text" id="projectName" placeholder="專案名稱 (例如: XX廣告拍攝)" required>
+    
+    <label for="scriptDate">腳本死線日期:</label>
+    <input type="date" id="scriptDate" required>
+    
+    <label for="shootingDate">拍攝日期:</label>
+    <input type="date" id="shootingDate" required>
+    
+    <label for="submissionDate">交稿死線日期:</label>
+    <input type="date" id="submissionDate" required>
+    
+    <button onclick="addProject()">+ 加入專案</button>
+
+    <h2>專案列表</h2>
+    <div id="projectList">
+        </div>
+
+    <script>
+        // --- JavaScript 邏輯區塊 ---
+        const STORAGE_KEY = 'clientProjects';
+
+        function loadProjects() {
+            // 從瀏覽器儲存區讀取資料，如果沒有則返回空陣列
+            const json = localStorage.getItem(STORAGE_KEY);
+            return json ? JSON.parse(json) : [];
+        }
+
+        function saveProjects(projects) {
+            // 將專案清單存回瀏覽器
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+        }
+
+        function displayProjects() {
+            const projects = loadProjects();
+            const listDiv = document.getElementById('projectList');
+            listDiv.innerHTML = '';
+
+            if (projects.length === 0) {
+                listDiv.innerHTML = '<p style="color:gray;">目前沒有追蹤中的專案。</p>';
+                return;
+            }
+
+            // 依據交稿死線排序 (最近的排在最前面)
+            projects.sort((a, b) => new Date(a.submissionDate) - new Date(b.submissionDate));
+
+            projects.forEach((project, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'project-item';
+                
+                // 檢查交稿日期是否少於 7 天 (簡單的警示色)
+                const today = new Date();
+                const deadline = new Date(project.submissionDate);
+                const diffTime = deadline.getTime() - today.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const deadlineColor = diffDays <= 7 ? 'style="color:red; font-weight: bold;"' : '';
+
+
+                itemDiv.innerHTML = `
+                    <h3>${project.name}</h3>
+                    <button class="delete-btn" onclick="deleteProject(${index})">刪除</button>
+                    <span class="date-label">腳本死線：${project.scriptDate}</span>
+                    <span class="date-label">拍攝日期：${project.shootingDate}</span>
+                    <span class="date-label" ${deadlineColor}>交稿死線：${project.submissionDate} (還剩 ${diffDays} 天)</span>
+                `;
+                listDiv.appendChild(itemDiv);
+            });
+        }
+
+        function addProject() {
+            const name = document.getElementById('projectName').value;
+            const script = document.getElementById('scriptDate').value;
+            const shooting = document.getElementById('shootingDate').value;
+            const submission = document.getElementById('submissionDate').value;
+
+            if (!name || !script || !shooting || !submission) {
+                alert('請填寫所有欄位！');
+                return;
+            }
+
+            const newProject = {
+                name: name,
+                scriptDate: script,
+                shootingDate: shooting,
+                submissionDate: submission
+            };
+
+            const projects = loadProjects();
+            projects.push(newProject);
+            saveProjects(projects);
+
+            // 清空輸入欄位
+            document.getElementById('projectName').value = '';
+            document.getElementById('scriptDate').value = '';
+            document.getElementById('shootingDate').value = '';
+            document.getElementById('submissionDate').value = '';
+
+            displayProjects();
+        }
+
+        function deleteProject(indexToDelete) {
+            if (!confirm("確定要刪除這個專案嗎？")) {
+                return;
+            }
+            const projects = loadProjects();
+            // 從陣列中刪除指定索引的專案
+            projects.splice(indexToDelete, 1);
+            saveProjects(projects);
+            displayProjects();
+        }
+
+        // 頁面載入時運行一次，顯示現有的專案
+        window.onload = displayProjects;
+    </script>
+
+</body>
+</html>
