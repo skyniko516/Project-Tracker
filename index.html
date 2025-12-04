@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>我的專案時程儀表板</title>
+    <title>專案追蹤 追追追</title>
     <meta charset="UTF-8">
     
     <style>
@@ -19,7 +19,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: var(--bg-color); 
             padding: 40px 20px; 
-            max-width: 750px; /* 稍微寬一點 */
+            max-width: 750px; 
             margin: 0 auto; 
             color: #333;
         }
@@ -27,16 +27,18 @@
             text-align: center;
             color: var(--primary-color); 
             margin-bottom: 5px;
-            font-weight: 300; /* 極簡專業風格：字體稍微細一點 */
+            font-weight: 300; 
+            font-size: 2em; /* 加大主標題 */
         }
         p.subtitle {
             text-align: center;
-            color: #999;
+            color: var(--warning-color); /* 讓副標語是醒目的紅字 */
             margin-bottom: 30px;
-            font-size: 0.9em;
+            font-size: 1.1em;
+            font-weight: bold;
         }
         h2 { 
-            border-bottom: 1px solid #e0e0e0; /* 簡約分隔線 */
+            border-bottom: 1px solid #e0e0e0; 
             padding-bottom: 8px; 
             margin-top: 35px;
             color: var(--primary-color);
@@ -51,8 +53,8 @@
             width: 100%; 
             box-sizing: border-box; 
             border: 1px solid #ccc;
-            border-radius: 8px; /* 圓角 */
-            background-color: #fffaf0; /* 淺米色輸入框背景 */
+            border-radius: 8px; 
+            background-color: #fffaf0; 
             transition: border-color 0.3s;
         }
         input[type="text"]:focus, input[type="date"]:focus {
@@ -87,15 +89,49 @@
             background-color: #5d4037; 
         }
 
-        /* 專案列表樣式 */
+        /* 專案列表容器 */
+        #projectList {
+            list-style: none;
+            padding: 0;
+        }
+
+        /* 專案列表項目（卡片）樣式 */
         .project-item { 
             background-color: var(--card-bg); 
             border-radius: var(--border-radius); 
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05); /* 輕微陰影 */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05); 
             margin-bottom: 20px; 
-            padding: 20px; 
+            padding: 20px 20px 20px 50px; /* 左側留出空間給序號 */
             position: relative; 
-            border-left: 5px solid var(--accent-color); /* 增加一個側邊色條 */
+            border-left: 5px solid var(--accent-color); 
+        }
+
+        /* 順序編號樣式（菱形） */
+        .project-item::before {
+            content: attr(data-index); /* 顯示 JS 傳入的 index */
+            position: absolute;
+            left: 15px;
+            top: 20px;
+            width: 25px;
+            height: 25px;
+            line-height: 25px;
+            text-align: center;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 0.9em;
+            font-weight: bold;
+            border-radius: 5px;
+            transform: rotate(45deg); /* 旋轉成菱形 */
+        }
+        .project-item span.project-index { /* 讓文字不旋轉回來 */
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            line-height: 25px;
+            text-align: center;
+            transform: rotate(-45deg); 
         }
 
         /* 日期標籤樣式 */
@@ -107,7 +143,7 @@
             padding-left: 15px;
             position: relative;
         }
-        .date-label::before { /* 增加小點綴 */
+        .date-label::before { 
             content: "•";
             color: var(--accent-color);
             font-size: 1.2em;
@@ -138,7 +174,7 @@
             background-color: #b71c1c;
         }
 
-        /* 警告日期（原本是程式碼裡設定的 red） */
+        /* 警告日期（倒數天數）樣式 */
         .warning-text {
             font-weight: bold;
             color: var(--warning-color) !important; 
@@ -147,8 +183,8 @@
 </head>
 <body>
 
-    <h1>🎬 專案時程儀表板</h1>
-    <p class="subtitle">追蹤您的腳本、拍攝與上線時間，保持專業與效率！</p>
+    <h1>🏃‍♀️ 專案追蹤 追追追</h1>
+    <p class="subtitle" style="color:#d32f2f; font-weight:bold;">不要壓線！提前給！加油加油不要當P人！💪</p>
 
     <h2>新增專案</h2>
     <input type="text" id="projectName" placeholder="專案名稱 (例如: XX餐廳拍攝)" required>
@@ -164,8 +200,7 @@
     
     <button onclick="addProject()">+ 加入專案</button>
 
-    <h2>追蹤列表</h2>
-    <div id="projectList">
+    <h2>待辦追蹤列表</h2> <div id="projectList">
         </div>
 
     <script>
@@ -178,6 +213,31 @@
 
         function saveProjects(projects) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+        }
+
+        // 計算日期差額的通用函數
+        function getDaysRemaining(dateString) {
+            const today = new Date();
+            const targetDate = new Date(dateString);
+            
+            // 將日期設為當天午夜，以確保計算準確
+            today.setHours(0, 0, 0, 0); 
+            targetDate.setHours(0, 0, 0, 0); 
+
+            const diffTime = targetDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            let text = `還剩 ${diffDays} 天`;
+            let className = '';
+
+            if (diffDays < 0) {
+                text = `已過期 ${Math.abs(diffDays)} 天`;
+                className = 'warning-text';
+            } else if (diffDays <= 7) {
+                className = 'warning-text'; // 7天內警示
+            }
+
+            return { text, className };
         }
 
         function displayProjects() {
@@ -196,34 +256,30 @@
             projects.forEach((project, index) => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'project-item';
-                
-                // 檢查影片上線時間是否少於 7 天 (簡單的警示色)
-                const today = new Date();
-                const deadline = new Date(project.submissionDate);
-                // 將日期設為當天午夜，以確保計算準確
-                today.setHours(0, 0, 0, 0); 
-                deadline.setHours(0, 0, 0, 0); 
+                // 設置自定義屬性 data-index，供 CSS 菱形序號使用
+                itemDiv.setAttribute('data-index', index + 1);
 
-                const diffTime = deadline.getTime() - today.getTime();
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                // 決定警示文字樣式
-                let deadlineClass = '';
-                if (diffDays <= 7 && diffDays >= 0) {
-                    deadlineClass = 'warning-text'; // 7天內警示
-                } else if (diffDays < 0) {
-                    deadlineClass = 'warning-text'; // 已過期
-                }
-
-                const daysRemainingText = diffDays < 0 ? `已過期 ${Math.abs(diffDays)} 天` : `還剩 ${diffDays} 天`;
+                // 計算所有日期的倒數計時
+                const scriptDays = getDaysRemaining(project.scriptDate);
+                const shootingDays = getDaysRemaining(project.shootingDate);
+                const submissionDays = getDaysRemaining(project.submissionDate);
 
 
                 itemDiv.innerHTML = `
                     <h3>${project.name}</h3>
                     <button class="delete-btn" onclick="deleteProject(${index})">刪除</button>
-                    <span class="date-label">腳本繳交時間：${project.scriptDate}</span>
-                    <span class="date-label">影片繳交時間：${project.shootingDate}</span>
-                    <span class="date-label ${deadlineClass}">影片上線時間：${project.submissionDate} (${daysRemainingText})</span>
+
+                    <span class="date-label ${scriptDays.className}">
+                        腳本繳交時間：${project.scriptDate} (${scriptDays.text})
+                    </span>
+
+                    <span class="date-label ${shootingDays.className}">
+                        影片繳交時間：${project.shootingDate} (${shootingDays.text})
+                    </span>
+
+                    <span class="date-label ${submissionDays.className}">
+                        影片上線時間：${project.submissionDate} (${submissionDays.text})
+                    </span>
                 `;
                 listDiv.appendChild(itemDiv);
             });
