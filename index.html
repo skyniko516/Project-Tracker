@@ -141,13 +141,13 @@
             background-color: var(--warning-color); 
         }
         .delete-btn:hover {
-            background-color: #b71c1c; /* 恢復 hover 深一點的紅 */
+            background-color: #b71c1c; 
         }
         .complete-btn { 
             background-color: var(--complete-color); 
         }
         .complete-btn:hover {
-            background-color: #388e3c; /* 恢復 hover 深一點的綠 */
+            background-color: #388e3c; 
         }
 
         /* 整體完成狀態樣式（綠色按鈕觸發） */
@@ -177,7 +177,7 @@
         .date-label { 
             font-size: 0.95em; 
             color: #555; 
-            padding-left: 0; /* 移除左側間距 */
+            padding-left: 0; 
             position: relative;
         }
         
@@ -225,34 +225,25 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
         }
 
-        // ----------------------------------------------------
-        // 核心修復：確保所有專案都有唯一的 ID
-        // ----------------------------------------------------
         function loadProjects() {
             const json = localStorage.getItem(STORAGE_KEY);
             const projects = json ? JSON.parse(json) : [];
 
             let needsSave = false;
             
-            // 檢查並為舊專案賦予唯一的 ID 
             projects.forEach(project => {
                 if (typeof project.id === 'undefined') {
-                    // 使用 Date.now() + Math.random() 確保 ID 隨機且唯一
                     project.id = Date.now() + Math.random(); 
                     needsSave = true;
                 }
             });
 
             if (needsSave) {
-                saveProjects(projects); // 儲存已修復 ID 的列表
+                saveProjects(projects); 
             }
 
             return projects;
         }
-        
-        // ----------------------------------------------------
-        // 所有操作都使用唯一的 ID 來查找正確的專案
-        // ----------------------------------------------------
         
         function findProjectIndexById(id) {
             const projects = loadProjects();
@@ -301,10 +292,6 @@
             }
         }
 
-        // ----------------------------------------------------
-        // 渲染邏輯
-        // ----------------------------------------------------
-
         function getDaysRemaining(dateString) {
             const today = new Date();
             const targetDate = new Date(dateString);
@@ -341,7 +328,8 @@
             // 如果單一任務完成或整體專案完成，則不顯示倒數計時
             if (!project.isProjectCompleted && !isCompleted && date) {
                 const days = getDaysRemaining(date);
-                countdownHtml = ` <span class="${days.className}">(${days.text})</span>`;
+                // 這裡加入了 <br> 標籤，強制換行
+                countdownHtml = `<br><span class="${days.className}">(${days.text})</span>`; 
             }
 
             return `
@@ -416,14 +404,8 @@
             const shooting = document.getElementById('shootingDate').value;
             const submission = document.getElementById('submissionDate').value;
 
-            // !! 驗證檢查仍關閉，以確保新增功能可用 !!
-            // if (!name) { 
-            //     alert('請填寫專案名稱！');
-            //     return;
-            // }
-
             const newProject = {
-                id: Date.now() + Math.random(), // <-- 確保每次新增都有唯一的 ID
+                id: Date.now() + Math.random(), 
                 name: name,
                 scriptDate: script,
                 shootingDate: shooting,
