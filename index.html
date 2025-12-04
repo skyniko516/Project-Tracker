@@ -3,6 +3,7 @@
 <head>
     <title>專案追蹤 追追追</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <style>
         /* 基礎設定 */
@@ -179,17 +180,7 @@
             padding-left: 0; /* 移除左側間距 */
             position: relative;
         }
-        /* 移除點點 (將這個區塊註解或移除) */
-        /* .date-label::before { 
-            content: "•";
-            color: var(--accent-color);
-            font-size: 1.2em;
-            line-height: 1;
-            position: absolute;
-            left: 0;
-            top: 5px;
-        } */
-
+        
         /* 個別任務 Checkbox */
         .task-checkbox {
             margin-right: 10px;
@@ -243,7 +234,7 @@
 
             let needsSave = false;
             
-            // 檢查並為舊專案賦予唯一的 ID (解決第一個專案出錯的問題)
+            // 檢查並為舊專案賦予唯一的 ID 
             projects.forEach(project => {
                 if (typeof project.id === 'undefined') {
                     // 使用 Date.now() + Math.random() 確保 ID 隨機且唯一
