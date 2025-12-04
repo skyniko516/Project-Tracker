@@ -98,7 +98,7 @@
             margin-left: 10px; /* 增加左側空間 */
         }
         
-        /* 1. 菱形突出 */
+        /* 菱形突出 */
         .project-item::before {
             content: ""; 
             position: absolute;
@@ -111,7 +111,7 @@
             transform: rotate(45deg); 
             z-index: 1; 
         }
-        /* 1. 數字保持直立 */
+        /* 數字保持直立 */
         .project-index {
             position: absolute;
             left: -20px; /* 讓數字跟著菱形突出去 */
@@ -120,106 +120,4 @@
             height: 30px;
             line-height: 30px;
             text-align: center;
-            color: white;
-            font-size: 0.9em;
-            font-weight: bold;
-            z-index: 2; 
-        }
-
-        /* 3. 綠色完成按鈕和紅色刪除按鈕 */
-        .action-btn { 
-            width: auto; 
-            padding: 5px 10px; 
-            float: right; 
-            font-size: 0.85em;
-            border-radius: 6px;
-            margin-left: 10px;
-            margin-bottom: 0;
-        }
-        .delete-btn { 
-            background-color: var(--warning-color); 
-        }
-        .delete-btn:hover {
-            background-color: #b71c1c;
-        }
-        .complete-btn { 
-            background-color: var(--complete-color); 
-        }
-        .complete-btn:hover {
-            background-color: #388e3c;
-        }
-
-        /* 4. 整體完成狀態樣式（綠色按鈕觸發） */
-        .project-item.overall-completed {
-            opacity: 0.5; 
-            background-color: #f0f0f0;
-            border-left-color: var(--complete-color);
-        }
-        .project-item.overall-completed h3 {
-            text-decoration: line-through; 
-            color: #9e9e9e;
-        }
-
-        /* 2. 個別任務完成狀態（Checkbox 觸發） */
-        .date-label.task-completed {
-            text-decoration: line-through; 
-            color: #9e9e9e !important;
-        }
-
-        /* 日期標籤容器 */
-        .date-container {
-             display: flex;
-             align-items: center;
-             margin-top: 8px;
-        }
-        /* 日期標籤文字 */
-        .date-label { 
-            font-size: 0.95em; 
-            color: #555; 
-            padding-left: 15px;
-            position: relative;
-        }
-        .date-label::before { 
-            content: "•";
-            color: var(--accent-color);
-            font-size: 1.2em;
-            line-height: 1;
-            position: absolute;
-            left: 0;
-            top: 5px;
-        }
-
-        /* 個別任務 Checkbox */
-        .task-checkbox {
-            margin-right: 10px;
-            min-width: 15px;
-            min-height: 15px;
-        }
-
-        /* 警告日期（倒數天數）樣式 */
-        .warning-text {
-            font-weight: bold;
-            color: var(--warning-color) !important; 
-        }
-    </style>
-</head>
-<body>
-
-    <h1>🏃‍♀️ 專案追蹤 追追追</h1>
-    <p class="subtitle" style="color:#d32f2f; font-weight:bold;">不要壓線！提前給！加油加油不要當P人！💪</p>
-
-    <h2>新增專案</h2>
-    <input type="text" id="projectName" placeholder="專案名稱 (例如: XX餐廳拍攝)" required>
-    
-    <label for="scriptDate">腳本繳交時間:</label>
-    <input type="date" id="scriptDate" required>
-    
-    <label for="shootingDate">影片繳交時間:</label>
-    <input type="date" id="shootingDate" required>
-    
-    <label for="submissionDate">影片上線時間:</label>
-    <input type="date" id="submissionDate" required>
-    
-    <button onclick="addProject()">+ 加入專案</button>
-
-    <h2>待辦
+            color:
